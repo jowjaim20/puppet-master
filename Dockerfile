@@ -8,4 +8,9 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 RUN npm ci
 COPY . .    
-CMD ["node", "./dist/app.js"]
+
+RUN npm run build
+
+WORKDIR ./dist
+
+CMD node app.js

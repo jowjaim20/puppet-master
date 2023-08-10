@@ -2,9 +2,10 @@ import { Request, Response } from "express";
 import puppeteer from "puppeteer";
 
 const startTask = async (req: Request, res: Response) => {
-  const browser = await puppeteer.launch();
+  const link = req.body?.url;
+  const browser = await puppeteer.launch({ headless: "new" });
   const page = await browser.newPage();
-  await page.goto("https://google.com");
+  await page.goto(link);
   await page.screenshot({ path: "example.png" });
   await browser.close();
 

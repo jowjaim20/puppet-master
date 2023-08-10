@@ -6,7 +6,7 @@ const startTask = async (req: Request, res: Response) => {
   const browser = await puppeteer.launch({ headless: "new" });
   const page = await browser.newPage();
   await page.goto(link);
-  await page.screenshot({ path: "example.png" });
+  //   await page.screenshot({ path: "example.png" });
   await browser.close();
 
   res.status(200).send("done");

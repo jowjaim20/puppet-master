@@ -3,7 +3,13 @@ import puppeteer from "puppeteer";
 
 const startTask = async (req: Request, res: Response) => {
   const link = req.body?.url;
-  const browser = await puppeteer.launch({ headless: "new" });
+  const browser = await puppeteer.launch({
+    headless: "new",
+    executablePath:
+      process.env.NODE_ENV === "production"
+        ? process.env.PUPPETEER_EXECUTABLE_PATH
+        : puppeteer.executablePath()
+  });
   const page = await browser.newPage();
   await page.goto(link);
   //   await page.screenshot({ path: "example.png" });

@@ -7,7 +7,7 @@ const startTask = async (req: Request, res: Response) => {
     args: [
       "--disable-setuid-sandbox",
       "--no-sandbox",
-      "--single-process",
+      // "--single-process",
       "--no-zygote"
     ],
     headless: "new",

@@ -18,10 +18,21 @@ const startTask = async (req: Request, res: Response) => {
   });
   const page = await browser.newPage();
   await page.goto(link);
-  //   await page.screenshot({ path: "example.png" });
+  // await page.screenshot({ path: "example.png" });
+  const tweetHandles = await page.$$("#product-loop");
+  console.log("tweetHandles", tweetHandles);
+  const testArr: string[] = [];
+
+  for (const tweetHandle of tweetHandles) {
+    // @ts-ignore
+    const singleTweet = await page.evaluate((el) => el.innerText, tweetHandle);
+    testArr.push(singleTweet);
+  }
   await browser.close();
 
-  res.status(200).send("done");
+  res.status(200).json({
+    text: testArr
+  });
 };
 
 export { startTask };

@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import * as cheerio from "cheerio";
-import puppeteer from "puppeteer";
+import puppeteer, { Page } from "puppeteer";
 
 const startTask = async (req: Request, res: Response) => {
   const link = req.body?.url;
@@ -25,36 +25,16 @@ const startTask = async (req: Request, res: Response) => {
   let isDisabled = false;
   while (!isDisabled) {
     const $ = cheerio.load(await page.content());
-    const sib = $("#product-loop");
-    const child = sib.children();
-    child.each((i, el) => {
+    const parentContainer = $("#product-loop");
+    const childs = parentContainer.children();
+    childs.each((i, el) => {
       const text = $(el).find("div.product-info > div > a").text();
       testArr.push(text.trim());
     });
 
-    console.log("testArr", testArr);
-
-    // await page.waitForSelector("#pagination > a:nth-child(4)", {
-    //   visible: true
-    // });
-
-    const parentElement = $("#pagination");
-
-    // Check if the last span has the "current" class
-    const lastChild = parentElement.find(":last-child");
-    const isLastChildCurrent = lastChild.hasClass("current");
-    console.log("isLastSpanCurrent", isLastChildCurrent);
-
+    const isLastChildCurrent = await isLastChildHas(page, $);
+    !isLastChildCurrent && (await goToNextPage(page));
     isDisabled = isLastChildCurrent;
-
-    if (!isLastChildCurrent) {
-      try {
-        await page.click("#pagination > a:nth-child(4)");
-      } catch (error) {
-        console.log(error);
-      }
-      // await page.waitForNavigation();
-    }
   }
 
   await browser.close();
@@ -62,6 +42,24 @@ const startTask = async (req: Request, res: Response) => {
   res.status(200).json({
     text: testArr
   });
+};
+
+const getText = () => {};
+
+const goToNextPage = async (page: Page) => {
+  try {
+    await page.click("#pagination > a:nth-child(4)");
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const isLastChildHas = async (page: Page, $: cheerio.CheerioAPI) => {
+  const parentElement = $("#pagination");
+
+  const lastChild = parentElement.find(":last-child");
+  const isLastChildCurrent = lastChild.hasClass("current");
+  return isLastChildCurrent;
 };
 
 export { startTask };

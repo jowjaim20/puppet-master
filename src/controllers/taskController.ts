@@ -11,7 +11,7 @@ const startTask = async (req: Request, res: Response) => {
       // "--single-process",
       "--no-zygote"
     ],
-    headless: false,
+    headless: "new",
     executablePath:
       process.env.NODE_ENV === "production"
         ? process.env.PUPPETEER_EXECUTABLE_PATH

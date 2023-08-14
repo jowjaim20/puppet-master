@@ -4,6 +4,10 @@ import puppeteer, { Page } from "puppeteer";
 
 const startTask = async (req: Request, res: Response) => {
   const link = req.body?.url;
+  const pContainerClass = req.body?.pContainerClass;
+  const textElementClass = req.body?.textElementClass;
+  const hasPagination = req.body?.hasPagination;
+
   const browser = await puppeteer.launch({
     args: [
       "--disable-setuid-sandbox",
@@ -25,16 +29,22 @@ const startTask = async (req: Request, res: Response) => {
   let isDisabled = false;
   while (!isDisabled) {
     const $ = cheerio.load(await page.content());
-    const parentContainer = $("#product-loop");
+    const parentContainer = $(pContainerClass);
     const childs = parentContainer.children();
     childs.each((i, el) => {
-      const text = $(el).find("div.product-info > div > a").text();
+      const text = textElementClass
+        ? $(el).find(textElementClass).text()
+        : $(el).text();
       testArr.push(text.trim());
     });
 
-    const isLastChildCurrent = await isLastChildHas(page, $);
-    !isLastChildCurrent && (await goToNextPage(page));
-    isDisabled = isLastChildCurrent;
+    if (hasPagination) {
+      const isLastChildCurrent = await isLastChildHas(page, $);
+      !isLastChildCurrent && (await goToNextPage(page));
+      isDisabled = isLastChildCurrent;
+    } else {
+      isDisabled = true;
+    }
   }
 
   await browser.close();
@@ -43,8 +53,6 @@ const startTask = async (req: Request, res: Response) => {
     text: testArr
   });
 };
-
-const getText = () => {};
 
 const goToNextPage = async (page: Page) => {
   try {

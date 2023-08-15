@@ -5,8 +5,10 @@ import puppeteer, { Page } from "puppeteer";
 const startTask = async (req: Request, res: Response) => {
   const link = req.body?.url;
   const pContainerClass = req.body?.pContainerClass;
-  const textElementClass = req.body?.textElementClass;
+  const titleSelector = req.body?.titleSelector;
   const hasPagination = req.body?.hasPagination;
+  const dateSelector = req.body?.dateSelector;
+  const priceSelector = req.body?.priceSelector;
 
   const browser = await puppeteer.launch({
     args: [
@@ -23,7 +25,7 @@ const startTask = async (req: Request, res: Response) => {
   });
   const page = await browser.newPage();
   await page.goto(link);
-  const testArr: string[] = [];
+  const testArr: any[] = [];
 
   // await page.screenshot({ path: "example.png" });
   let isDisabled = false;
@@ -32,10 +34,18 @@ const startTask = async (req: Request, res: Response) => {
     const parentContainer = $(pContainerClass);
     const childs = parentContainer.children();
     childs.each((i, el) => {
-      const text = textElementClass
-        ? $(el).find(textElementClass).text()
-        : $(el).text();
-      testArr.push(text.trim());
+      const title = getText(titleSelector, el, $);
+      const date =
+        new Date(getText(dateSelector, el, $)).toLocaleDateString() ||
+        new Date().toLocaleDateString();
+      const price = getText(priceSelector, el, $);
+
+      const schedule = {
+        title,
+        date,
+        price
+      };
+      testArr.push(schedule);
     });
 
     if (hasPagination) {
@@ -52,6 +62,14 @@ const startTask = async (req: Request, res: Response) => {
   res.status(200).json({
     text: testArr
   });
+};
+
+const getText = (
+  selector: string,
+  el: cheerio.Element,
+  $: cheerio.CheerioAPI
+) => {
+  return selector ? $(el).find(selector).text().trim() : $(el).text().trim();
 };
 
 const goToNextPage = async (page: Page) => {

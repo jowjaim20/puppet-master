@@ -2,13 +2,73 @@ import { Request, Response } from "express";
 import * as cheerio from "cheerio";
 import puppeteer, { Page } from "puppeteer";
 
+const KEYS = {
+  filter: "filter",
+  trim: "trim",
+  replace: "replace",
+  split: "split",
+  find: "find"
+} as const;
+
+type taskPNames = keyof typeof KEYS;
+
+type filterOptions<T extends typeof KEYS.filter> = {
+  key: T;
+  includes: {
+    searchString: string;
+  };
+};
+type findOptions<T extends typeof KEYS.find> = {
+  key: T;
+  includes: {
+    searchString: string;
+  };
+};
+type trimOptions<T extends typeof KEYS.trim> = {
+  key: T;
+};
+type replaceOptions<T extends typeof KEYS.replace> = {
+  key: T;
+  searchValue: string;
+  replaceValue: string;
+};
+type splitOptions<T extends typeof KEYS.split> = {
+  key: T;
+  separator: string;
+};
+interface Task<T extends taskPNames> {
+  options: T extends typeof KEYS.filter
+    ? filterOptions<T>
+    : T extends typeof KEYS.trim
+    ? trimOptions<T>
+    : T extends typeof KEYS.replace
+    ? replaceOptions<T>
+    : T extends typeof KEYS.split
+    ? splitOptions<T>
+    : T extends typeof KEYS.find
+    ? findOptions<T>
+    : undefined;
+}
+// const stringTask: Task<taskPNames>[] = [
+//   { options: { key: "trim" } },
+//   { options: { key: "filter", includes: "d" } },
+//   {
+//     options: { key: "replace", replaceValue: "dfsdf", searchValue: "sdfsd" }
+//   }
+// ];
+
+interface Selector {
+  selector: "string";
+  task: Task<taskPNames>[];
+}
+
 const startTask = async (req: Request, res: Response) => {
   const link = req.body?.url;
-  const pContainerClass = req.body?.pContainerClass;
-  const titleSelector = req.body?.titleSelector;
-  const hasPagination = req.body?.hasPagination;
-  const dateSelector = req.body?.dateSelector;
-  const priceSelector = req.body?.priceSelector;
+  const pContainerClass = req.body.pContainerClass;
+  const titleSelector: Selector = req.body.titleSelector;
+  const hasPagination = req.body.hasPagination;
+  const dateSelector: Selector = req.body.dateSelector;
+  const priceSelector: Selector = req.body.priceSelector;
 
   const browser = await puppeteer.launch({
     args: [
@@ -36,8 +96,7 @@ const startTask = async (req: Request, res: Response) => {
     childs.each((i, el) => {
       const title = getText(titleSelector, el, $);
       const date =
-        new Date(getText(dateSelector, el, $)).toLocaleDateString() ||
-        new Date().toLocaleDateString();
+        getText(dateSelector, el, $) || new Date().toLocaleDateString();
       const price = getText(priceSelector, el, $);
 
       const schedule = {
@@ -64,12 +123,61 @@ const startTask = async (req: Request, res: Response) => {
   });
 };
 
+const isStringArray = (arr: any): arr is string[] => {
+  return arr[0].length > 1 || arr.length === 0;
+};
+
 const getText = (
-  selector: string,
+  selector: Selector,
   el: cheerio.Element,
   $: cheerio.CheerioAPI
 ) => {
-  return selector ? $(el).find(selector).text().trim() : $(el).text().trim();
+  let mainString: string | string[];
+  const foundString = selector.selector
+    ? $(el).find(selector.selector).text()
+    : $(el).text();
+  mainString = foundString;
+  for (let task of selector.task) {
+    switch (task.options.key) {
+      case "trim":
+        if (typeof mainString === "string") mainString = mainString.trim();
+        break;
+      case "filter":
+        const filterSearchString = task.options.includes.searchString;
+        if (isStringArray(mainString))
+          mainString = mainString.filter((text) =>
+            text.includes(filterSearchString)
+          );
+        break;
+      case "find":
+        const findSearchString = task.options.includes.searchString;
+        if (isStringArray(mainString)) {
+          console.log("isArray");
+
+          mainString =
+            mainString.find((text) => text.includes(findSearchString)) || "";
+        }
+        break;
+      case "replace":
+        if (typeof mainString === "string")
+          mainString = mainString.replace(
+            task.options.searchValue,
+            task.options.replaceValue
+          );
+
+        break;
+      case "split":
+        if (typeof mainString === "string")
+          mainString = mainString.split(task.options.separator);
+
+        break;
+
+      default:
+        break;
+    }
+  }
+
+  return mainString;
 };
 
 const goToNextPage = async (page: Page) => {

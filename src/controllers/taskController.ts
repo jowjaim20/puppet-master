@@ -127,39 +127,48 @@ const isStringArray = (arr: any): arr is string[] => {
   return arr[0].length > 1 || arr.length === 0;
 };
 
+const isNotEmptyString = (string: string | string[]) => {
+  return string !== "";
+};
+
 const getText = (
   selector: Selector,
   el: cheerio.Element,
   $: cheerio.CheerioAPI
 ) => {
   let mainString: string | string[];
+
   const foundString = selector.selector
     ? $(el).find(selector.selector).text()
     : $(el).text();
+
   mainString = foundString;
+
   for (let task of selector.task) {
     switch (task.options.key) {
       case "trim":
-        if (typeof mainString === "string") mainString = mainString.trim();
+        if (isNotEmptyString(mainString) && typeof mainString === "string")
+          mainString = mainString.trim();
         break;
       case "filter":
-        const filterSearchString = task.options.includes.searchString;
-        if (isStringArray(mainString))
-          mainString = mainString.filter((text) =>
-            text.includes(filterSearchString)
-          );
+        if (isNotEmptyString(mainString) && isStringArray(mainString)) {
+          if (task.options.includes.searchString) {
+            const filterSearchString = task.options.includes.searchString;
+            mainString = mainString.filter((text) =>
+              text.includes(filterSearchString)
+            );
+          }
+        }
         break;
       case "find":
-        const findSearchString = task.options.includes.searchString;
-        if (isStringArray(mainString)) {
-          console.log("isArray");
-
+        if (isNotEmptyString(mainString) && isStringArray(mainString)) {
+          const findSearchString = task.options.includes.searchString;
           mainString =
             mainString.find((text) => text.includes(findSearchString)) || "";
         }
         break;
       case "replace":
-        if (typeof mainString === "string")
+        if (typeof mainString === "string" && isNotEmptyString(mainString))
           mainString = mainString.replace(
             task.options.searchValue,
             task.options.replaceValue
@@ -167,7 +176,7 @@ const getText = (
 
         break;
       case "split":
-        if (typeof mainString === "string")
+        if (typeof mainString === "string" && isNotEmptyString(mainString))
           mainString = mainString.split(task.options.separator);
 
         break;

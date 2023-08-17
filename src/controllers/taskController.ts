@@ -93,19 +93,27 @@ const startTask = async (req: Request, res: Response) => {
     const $ = cheerio.load(await page.content());
     const parentContainer = $(pContainerClass);
     const childs = parentContainer.children();
-    childs.each((i, el) => {
-      const title = getText(titleSelector, el, $);
-      const date =
-        getText(dateSelector, el, $) || new Date().toLocaleDateString();
-      const price = getText(priceSelector, el, $);
+    for (let el of childs) {
+      const getAlltext = async () => {
+        const [title, date, price] = await Promise.all([
+          getText(titleSelector, el, $),
+          getText(dateSelector, el, $),
+          getText(priceSelector, el, $)
+        ]);
 
-      const schedule = {
-        title,
-        date,
-        price
+        const schedule = {
+          title,
+          date,
+          price
+        };
+
+        return schedule;
       };
+      const schedule = await getAlltext();
+      console.log("schedule", schedule);
+
       testArr.push(schedule);
-    });
+    }
 
     if (hasPagination) {
       const isLastChildCurrent = await isLastChildHas(page, $);
@@ -131,7 +139,7 @@ const isNotEmptyString = (string: string | string[]) => {
   return string !== "";
 };
 
-const getText = (
+const getText = async (
   selector: Selector,
   el: cheerio.Element,
   $: cheerio.CheerioAPI
@@ -143,8 +151,10 @@ const getText = (
     : $(el).text();
 
   mainString = foundString;
-
-  for (let task of selector.task) {
+  var x = 0,
+    l = selector.task.length;
+  while (x < l) {
+    const task = selector.task[x];
     switch (task.options.key) {
       case "trim":
         if (isNotEmptyString(mainString) && typeof mainString === "string")
@@ -168,7 +178,7 @@ const getText = (
         }
         break;
       case "replace":
-        if (typeof mainString === "string" && isNotEmptyString(mainString))
+        if (isNotEmptyString(mainString) && typeof mainString === "string")
           mainString = mainString.replace(
             task.options.searchValue,
             task.options.replaceValue
@@ -176,7 +186,7 @@ const getText = (
 
         break;
       case "split":
-        if (typeof mainString === "string" && isNotEmptyString(mainString))
+        if (isNotEmptyString(mainString) && typeof mainString === "string")
           mainString = mainString.split(task.options.separator);
 
         break;
@@ -184,6 +194,7 @@ const getText = (
       default:
         break;
     }
+    x++;
   }
 
   return mainString;

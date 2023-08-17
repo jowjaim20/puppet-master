@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import * as cheerio from "cheerio";
 import puppeteer, { Page } from "puppeteer";
+import axios from "axios";
 
 const KEYS = {
   filter: "filter",
@@ -66,69 +67,61 @@ const startTask = async (req: Request, res: Response) => {
   const link = req.body?.url;
   const pContainerClass = req.body.pContainerClass;
   const titleSelector: Selector = req.body.titleSelector;
-  const hasPagination = req.body.hasPagination;
+  const hasPagination = false;
   const dateSelector: Selector = req.body.dateSelector;
   const priceSelector: Selector = req.body.priceSelector;
   const testArr: any[] = [];
-  console.time("browser");
-  const browser = await puppeteer.launch({
-    args: [
-      "--disable-setuid-sandbox",
-      "--no-sandbox",
-      // "--single-process",
-      "--no-zygote"
-    ],
-    headless: "new",
-    executablePath:
-      process.env.NODE_ENV === "production"
-        ? process.env.PUPPETEER_EXECUTABLE_PATH
-        : puppeteer.executablePath()
-  });
-  const page = await browser.newPage();
-  await page.goto(link);
 
-  console.timeEnd("browser");
+  try {
+    console.time("browser");
 
-  console.time("loop");
+    const data = await axios.get(link);
 
-  let isDisabled = false;
-  while (!isDisabled) {
-    const $ = cheerio.load(await page.content());
-    const parentContainer = $(pContainerClass);
-    const childs = parentContainer.children();
-    for (let el of childs) {
-      const getAlltext = async () => {
-        const [title, date, price] = await Promise.all([
-          getText(titleSelector, el, $),
-          getText(dateSelector, el, $),
-          getText(priceSelector, el, $)
-        ]);
+    console.timeEnd("browser");
 
-        const schedule = {
-          title,
-          date,
-          price
+    console.time("loop");
+
+    let isDisabled = false;
+    while (!isDisabled) {
+      const $ = cheerio.load(data.data);
+      const parentContainer = $(pContainerClass);
+      const childs = parentContainer.children();
+      for (let el of childs) {
+        const getAlltext = async () => {
+          const [title, date, price] = await Promise.all([
+            getText(titleSelector, el, $),
+            getText(dateSelector, el, $),
+            getText(priceSelector, el, $)
+          ]);
+
+          const schedule = {
+            title,
+            date,
+            price
+          };
+
+          return schedule;
         };
+        const schedule = await getAlltext();
 
-        return schedule;
-      };
-      const schedule = await getAlltext();
+        testArr.push(schedule);
+      }
 
-      testArr.push(schedule);
+      if (hasPagination) {
+        // const isLastChildCurrent = await isLastChildHas(page, $);
+        // !isLastChildCurrent && (await goToNextPage(page));
+        // isDisabled = isLastChildCurrent;
+      } else {
+        isDisabled = true;
+      }
     }
 
-    if (hasPagination) {
-      const isLastChildCurrent = await isLastChildHas(page, $);
-      !isLastChildCurrent && (await goToNextPage(page));
-      isDisabled = isLastChildCurrent;
-    } else {
-      isDisabled = true;
-    }
+    console.timeEnd("loop");
+  } catch (error) {
+    res.status(500).json({
+      error: "something went wrong"
+    });
   }
-
-  console.timeEnd("loop");
-
-  await browser.close();
 
   res.status(200).json({
     text: testArr

@@ -2,6 +2,8 @@ import dotenv from "dotenv";
 dotenv.config();
 import express from "express";
 import taskRouter from "./routes/task";
+import scrapeRouter from "./routes/scrape";
+
 import bodyParser from "body-parser";
 const PORT = process.env.PORT || 3500;
 
@@ -14,6 +16,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/task", taskRouter);
+app.use("/scrape", scrapeRouter);
 
 app.listen(PORT, () => {
   console.log(`[server]: Server is running at http://localhost:${PORT}`);

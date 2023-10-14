@@ -2,69 +2,9 @@ import { Request, Response } from "express";
 import * as cheerio from "cheerio";
 import puppeteer, { Page } from "puppeteer";
 
-const KEYS = {
-  filter: "filter",
-  trim: "trim",
-  replace: "replace",
-  split: "split",
-  find: "find"
-} as const;
-
-type taskPNames = keyof typeof KEYS;
-
-type filterOptions<T extends typeof KEYS.filter> = {
-  key: T;
-  includes: {
-    searchString: string;
-  };
-};
-type findOptions<T extends typeof KEYS.find> = {
-  key: T;
-  includes: {
-    searchString: string;
-  };
-};
-type trimOptions<T extends typeof KEYS.trim> = {
-  key: T;
-};
-type replaceOptions<T extends typeof KEYS.replace> = {
-  key: T;
-  searchValue: string;
-  replaceValue: string;
-};
-type splitOptions<T extends typeof KEYS.split> = {
-  key: T;
-  separator: string;
-};
-interface Task<T extends taskPNames> {
-  options: T extends typeof KEYS.filter
-    ? filterOptions<T>
-    : T extends typeof KEYS.trim
-    ? trimOptions<T>
-    : T extends typeof KEYS.replace
-    ? replaceOptions<T>
-    : T extends typeof KEYS.split
-    ? splitOptions<T>
-    : T extends typeof KEYS.find
-    ? findOptions<T>
-    : undefined;
-}
-// const stringTask: Task<taskPNames>[] = [
-//   { options: { key: "trim" } },
-//   { options: { key: "filter", includes: "d" } },
-//   {
-//     options: { key: "replace", replaceValue: "dfsdf", searchValue: "sdfsd" }
-//   }
-// ];
-
-interface Selector {
-  selector: "string";
-  task: Task<taskPNames>[];
-}
-
 const startTask = async (req: Request, res: Response) => {
-  const link = req.body?.url;
-  const pContainerClass = req.body.pContainerClass;
+  const link = req.body?.link;
+  const targetPageContainerSelector = req.body.targetPageContainerSelector;
   const titleSelector: Selector = req.body.titleSelector;
   const hasPagination = req.body.hasPagination;
   const dateSelector: Selector = req.body.dateSelector;
@@ -94,7 +34,7 @@ const startTask = async (req: Request, res: Response) => {
   let isDisabled = false;
   while (!isDisabled) {
     const $ = cheerio.load(await page.content());
-    const parentContainer = $(pContainerClass);
+    const parentContainer = $(targetPageContainerSelector);
     const childs = parentContainer.children();
     for (let el of childs) {
       const getAlltext = async () => {
@@ -159,39 +99,34 @@ const getText = async (
     l = selector.task.length;
   while (x < l) {
     const task = selector.task[x];
-    switch (task.options.key) {
+    switch (task.type) {
       case "trim":
         if (isNotEmptyString(mainString) && typeof mainString === "string")
           mainString = mainString.trim();
         break;
       case "filter":
         if (isNotEmptyString(mainString) && isStringArray(mainString)) {
-          if (task.options.includes.searchString) {
-            const filterSearchString = task.options.includes.searchString;
-            mainString = mainString.filter((text) =>
-              text.includes(filterSearchString)
-            );
-          }
+          const filterSearchString = task.includes.searchString;
+          mainString = mainString.filter((text) =>
+            text.includes(filterSearchString)
+          );
         }
         break;
       case "find":
         if (isNotEmptyString(mainString) && isStringArray(mainString)) {
-          const findSearchString = task.options.includes.searchString;
+          const findSearchString = task.includes.searchString;
           mainString =
             mainString.find((text) => text.includes(findSearchString)) || "";
         }
         break;
       case "replace":
         if (isNotEmptyString(mainString) && typeof mainString === "string")
-          mainString = mainString.replace(
-            task.options.searchValue,
-            task.options.replaceValue
-          );
+          mainString = mainString.replace(task.searchValue, task.replaceValue);
 
         break;
       case "split":
         if (isNotEmptyString(mainString) && typeof mainString === "string")
-          mainString = mainString.split(task.options.separator);
+          mainString = mainString.split(task.separator);
 
         break;
 

@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import * as cheerio from "cheerio";
 import puppeteer, { Page } from "puppeteer";
 
-const startTask = async (req: Request, res: Response) => {
+const startTask1 = async (req: Request, res: Response) => {
   const link = req.body?.link;
   const targetPageContainerSelector = req.body.targetPageContainerSelector;
   const titleSelector: Selector = req.body.titleSelector;
@@ -155,4 +155,4 @@ const isLastChildHas = async (page: Page, $: cheerio.CheerioAPI) => {
   return isLastChildCurrent;
 };
 
-export { startTask };
+export { startTask1 };

@@ -1,8 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 import express from "express";
-import taskRouter from "./routes/task";
-import scrapeRouter from "./routes/scrape";
+import taskRouter from "./cheerio/cheerio.route";
 import cors from "cors";
 
 import bodyParser from "body-parser";
@@ -15,7 +14,8 @@ app.use(bodyParser.json());
 const whitelist = [
   "http://localhost:3000",
   "http://localhost:5173",
-  "https://courseville-website-jowjaim20.vercel.app"
+  "https://courseville-website-jowjaim20.vercel.app",
+  "https://admin-courseville.netlify.app"
 ];
 
 app.use(
@@ -38,7 +38,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/task", taskRouter);
-app.use("/scrape", scrapeRouter);
+app.use("/scrape", taskRouter);
 
 app.listen(PORT, () => {
   console.log(`[server]: Server is running at http://localhost:${PORT}`);

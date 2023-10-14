@@ -3,6 +3,7 @@ dotenv.config();
 import express from "express";
 import taskRouter from "./routes/task";
 import scrapeRouter from "./routes/scrape";
+import cors from "cors";
 
 import bodyParser from "body-parser";
 const PORT = process.env.PORT || 3500;
@@ -10,6 +11,27 @@ const PORT = process.env.PORT || 3500;
 const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+
+const whitelist = [
+  "http://localhost:3000",
+  "http://localhost:5173",
+  "https://courseville-website-jowjaim20.vercel.app"
+];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      console.log("origin", origin);
+      if (whitelist.indexOf(origin || "") !== -1 || !origin) {
+        console.log("origin", origin);
+        callback(null, true);
+      } else {
+        callback(new Error("Not Allowed by Cors"));
+      }
+    },
+    optionsSuccessStatus: 200
+  })
+);
 
 app.get("/", (req, res) => {
   res.send("Express + TypeScript test");

@@ -10,6 +10,7 @@ type FilterOption = {
   type: typeof KEYS.filter;
   includes: {
     searchString: string;
+    key: string;
   };
 };
 
@@ -53,14 +54,24 @@ interface ResultTargetKey {
   key: string | [string] | [string, number];
 }
 
-type TaskWithMerge = Omit<ScrapeTask & { mergeTask: boolean }, "childTask">;
+interface Options {
+  mergeTask: boolean;
+  filter: FilterOption;
+}
+
+type TaskWithMerge = Omit<ScrapeTask, "childTask" | "options"> & {
+  options: Omit<Options, "filter">;
+};
 
 interface ScrapeTask {
-  childTask: TaskWithMerge[] | null;
+  options?: Omit<Options, "mergeTask">;
+  childTask?: TaskWithMerge[];
   resultTargetKey: ResultTargetKey;
   selector: string;
   stringTask: StringTask[];
 }
+
+type MainTask = ScrapeTask | TaskWithMerge;
 
 interface ScrapeRequest {
   link: string;
@@ -71,6 +82,12 @@ const REQUEST: ScrapeRequest = {
   link: "https://www.brooklyncraftcompany.com/collections/all-workshops",
   scrapeTasks: [
     {
+      options: {
+        filter: {
+          type: "filter",
+          includes: { key: "schedule", searchString: "Nov" }
+        }
+      },
       resultTargetKey: {
         key: "courses"
       },
@@ -82,7 +99,13 @@ const REQUEST: ScrapeRequest = {
       ],
       childTask: [
         {
-          mergeTask: true,
+          options: {
+            mergeTask: true,
+            filter: {
+              type: "filter",
+              includes: ""
+            }
+          },
           resultTargetKey: {
             key: ["course.title"]
           },
@@ -90,6 +113,16 @@ const REQUEST: ScrapeRequest = {
           stringTask: [
             {
               type: "trim"
+            },
+            {
+              type: "split",
+              separator: " "
+            },
+            {
+              type: "find",
+              includes: {
+                searchString: ".00"
+              }
             },
             {
               type: "replace",

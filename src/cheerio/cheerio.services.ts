@@ -11,10 +11,33 @@ export class Scraper {
     scrapeTasks.forEach((task) => {
       const el = $(task.selector);
 
-      const scrapedData = task.childTask
+      const scrapedData = task.childTask?.length
         ? this.scrapeChildren($, task, data)
         : this.getText(task, el);
-      this.assignTokey(task, scrapedData, data, task);
+
+      if (
+        task.childTask &&
+        typeof scrapedData !== "string" &&
+        typeof task.resultTargetKey.key === "string" &&
+        this.check(scrapedData, task.resultTargetKey.key)
+      ) {
+        const filtered = scrapedData[task.resultTargetKey.key].filter(
+          (item) => {
+            if (task.options) {
+              return item[task.options.filter.includes.key].includes(
+                task.options.filter.includes.searchString
+              );
+            }
+            return item;
+          }
+        );
+        scrapedData[task.resultTargetKey.key] = filtered;
+
+        this.assignTokey(task, scrapedData, data, task);
+      } else {
+        console.log("test", scrapedData);
+        this.assignTokey(task, scrapedData, data, task);
+      }
     });
   }
 
@@ -105,8 +128,9 @@ export class Scraper {
         testObj[secondKey] = string;
 
         if (
-          "mergeTask" in task &&
-          task.mergeTask &&
+          task.options &&
+          "mergeTask" in task.options &&
+          task.options.mergeTask &&
           delegate !== undefined &&
           (delegate === 0 || delegate > 0)
         ) {
@@ -162,10 +186,7 @@ export class Scraper {
     }
   }
 
-  modifyString(
-    scrapeTask: ScrapeTask | Omit<ScrapeTask, "childTask">,
-    foundString: string
-  ) {
+  modifyString(scrapeTask: MainTask, foundString: string) {
     const stringTask = new StringTask(foundString);
 
     let x = 0;
@@ -253,7 +274,7 @@ class StringTask {
   }
 
   private isStringArray(arr: any): arr is string[] {
-    return arr[0].length > 1 || arr.length === 0;
+    return arr[0].length >= 1 || arr.length === 0;
   }
 
   private isNotEmptyString(string: string | string[]) {
@@ -276,6 +297,7 @@ class StringTask {
       const foundString = this.string.find((text) =>
         text.includes(searchString)
       );
+      console.log("foundString", foundString);
 
       if (foundString) {
         this.string = foundString;

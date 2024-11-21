@@ -13,6 +13,8 @@ COPY . .
 
 RUN npm run build
 
+FROM node:22-alpine AS production
+
 FROM ghcr.io/puppeteer/puppeteer:21.0.2
 
 ARG NODE_ENV=production

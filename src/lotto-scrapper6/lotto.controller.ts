@@ -9,7 +9,7 @@ const startTask = async (req: Request, res: Response) => {
   const { index }: ScrapeRequest = req.body;
   console.log("index", index);
 
-  fetchData658(2);
+  fetchData658(6);
 
   res.status(200).json({ status: 200 });
 };

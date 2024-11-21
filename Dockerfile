@@ -1,4 +1,4 @@
-FROM node:18.x AS base
+FROM node:18 AS base
 
 # Install a chosen NPM version
 # ENV NPM_VERSION=10.3.0

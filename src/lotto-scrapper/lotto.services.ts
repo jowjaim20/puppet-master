@@ -83,7 +83,7 @@ const addResult = async (resultPayload: AddResult) => {
 
   if (
     new Date(resultPayload.date).getTime() > today.getTime() ||
-    resultPayload.numbers.length === 0
+    resultPayload.numbers.length !== 6
   ) {
     console.log("payloaderror");
   } else {

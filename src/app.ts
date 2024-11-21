@@ -3,6 +3,7 @@ dotenv.config();
 import express from "express";
 import taskRouter from "./cheerio/cheerio.route";
 import lottoRouter from "./lotto-scrapper/lotto.route";
+import pingRouter from "./ping/ping.route";
 
 import cors from "cors";
 
@@ -40,6 +41,8 @@ app.get("/", (req, res) => {
 });
 
 app.use("/task", taskRouter);
+app.use("/ping", pingRouter);
+
 app.use("/scrape", taskRouter);
 app.use("/lotto", lottoRouter);
 

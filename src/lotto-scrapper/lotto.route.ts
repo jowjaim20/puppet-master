@@ -7,7 +7,7 @@ const router = express.Router();
 
 router
   .post("/", [
-    check("link", "Link is required").notEmpty(),
+    check("index", "index is required").notEmpty(),
     (req: Request, res: Response, next: NextFunction) => {
       const error = validationResult(req);
       if (error.isEmpty()) {

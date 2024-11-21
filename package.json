@@ -5,7 +5,7 @@
   "main": "app.js",
   "scripts": {
     "build": "rimraf ./dist && tsc",
-    "start": "npm run build && node dist/app.js",
+    "start": "yarn build && node dist/app.js",
     "dev": " ts-node-dev --respawn --transpile-only src/app.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

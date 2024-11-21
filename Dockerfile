@@ -8,7 +8,7 @@ WORKDIR /usr/src/app
 
 COPY package*.json .
 
-RUN npm install --no-audit
+RUN yarn
 
 COPY . .
 
@@ -26,7 +26,7 @@ WORKDIR /usr/src/app
 
 COPY package*.json .
 
-RUN npm ci --omit=dev --force
+RUN yarn install --frozen-lockfile --omit=dev
 
 COPY --from=development /usr/src/app/dist ./dist
 

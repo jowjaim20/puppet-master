@@ -1,6 +1,6 @@
 FROM node:22.9-slim AS  development
 
-ENV NPM_VERSION=10.3.0
+ENV NPM_VERSION=10.9.0
 RUN npm install -g npm@"${NPM_VERSION}"
 
 

@@ -1,12 +1,14 @@
-FROM node:22.7 AS  development
+FROM node:22.11.0-alpine3.20 AS  development
 
+ENV NPM_VERSION=10.3.0
+RUN npm install -g npm@"${NPM_VERSION}"
 
 
 WORKDIR /usr/src/app
 
 COPY package*.json .
 
-RUN yarn
+RUN npm install --no-audit
 
 COPY . .
 
@@ -24,7 +26,7 @@ WORKDIR /usr/src/app
 
 COPY package*.json .
 
-RUN yarn install --frozen-lockfile --omit=dev
+RUN npm ci --omit=dev --force
 
 COPY --from=development /usr/src/app/dist ./dist
 

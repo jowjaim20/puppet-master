@@ -1,4 +1,7 @@
-FROM  node:22.11.0 as development
+FROM node:22.11.0-alpine3.20 AS  development
+
+ENV NPM_VERSION=10.3.0
+RUN npm install -g npm@"${NPM_VERSION}"
 
 
 WORKDIR /usr/src/app

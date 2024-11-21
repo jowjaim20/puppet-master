@@ -1,4 +1,4 @@
-FROM node:16-alpine as development
+FROM node:23 as development
 
 
 
@@ -10,9 +10,7 @@ RUN npm install
 
 COPY . .
 
-RUN npm run build
 
-FROM node:16-alpine AS production
 
 FROM ghcr.io/puppeteer/puppeteer:21.0.2
 

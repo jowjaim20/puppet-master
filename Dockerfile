@@ -1,6 +1,12 @@
-FROM node:22-alpine AS  development
+FROM node:22.11.0-alpine3.20 AS base
 
-RUN npm install -g npm@10.3.0
+# Install a chosen NPM version
+ENV NPM_VERSION=10.3.0
+RUN npm install -g npm@"${NPM_VERSION}"
+
+# Install dependencies only when needed
+FROM base AS deps
+
 
 WORKDIR /usr/src/app
 
@@ -26,6 +32,6 @@ COPY package*.json .
 
 RUN npm ci
 
-COPY --from=development /usr/src/app/dist ./dist
+COPY --from=base /usr/src/app/dist ./dist
 
 CMD ["node","dist/app.js"]

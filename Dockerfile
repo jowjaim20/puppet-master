@@ -1,6 +1,5 @@
 FROM node:18.4.0-alpine as development
 
-RUN npm install -g npm@latest
 
 
 WORKDIR /usr/src/app

@@ -6,7 +6,7 @@ WORKDIR /usr/src/app
 
 COPY package*.json .
 
-RUN npm install --no-audit
+RUN npm install
 
 COPY . .
 

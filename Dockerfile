@@ -30,8 +30,8 @@ WORKDIR /usr/src/app
 
 COPY package*.json .
 
-RUN npm ci
+RUN npm ci --omit=dev
 
-COPY --from=base /usr/src/app/dist ./dist
+COPY --from=deps /usr/src/app/dist ./dist
 
 CMD ["node","dist/app.js"]

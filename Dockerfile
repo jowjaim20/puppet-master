@@ -1,4 +1,4 @@
-FROM node:13.12.0-alpine as development
+FROM node:16-alpine as development
 
 
 
@@ -12,7 +12,7 @@ COPY . .
 
 RUN npm run build
 
-FROM node:13.12.0-alpine AS production
+FROM node:16-alpine AS production
 
 FROM ghcr.io/puppeteer/puppeteer:21.0.2
 

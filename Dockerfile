@@ -1,5 +1,4 @@
-FROM node:18-slim as development
-
+FROM --platform=linux/amd64 node:18 as development
 
 
 WORKDIR /usr/src/app

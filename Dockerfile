@@ -1,4 +1,4 @@
-FROM node:23 as development
+FROM node:18-slim as development
 
 
 

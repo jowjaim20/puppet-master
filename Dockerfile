@@ -1,8 +1,8 @@
-FROM node:22.11.0-alpine3.20 AS base
+FROM node:18.x AS base
 
 # Install a chosen NPM version
-ENV NPM_VERSION=10.3.0
-RUN npm install -g npm@"${NPM_VERSION}"
+# ENV NPM_VERSION=10.3.0
+# RUN npm install -g npm@"${NPM_VERSION}"
 
 # Install dependencies only when needed
 FROM base AS deps
@@ -12,7 +12,7 @@ WORKDIR /usr/src/app
 
 COPY package*.json .
 
-RUN npm install --no-audit
+RUN npm install 
 
 COPY . .
 

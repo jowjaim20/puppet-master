@@ -75,6 +75,8 @@ type MainTask = ScrapeTask | TaskWithMerge;
 
 interface ScrapeRequest {
   index: number;
+  link: string;
+  scrapeTasks: ScrapeTask[];
 }
 
 const REQUEST: ScrapeRequest = {

@@ -1,10 +1,13 @@
-FROM node:16-alpine as development
+FROM node:22-alpine as development
+
+RUN npm install -g npm@latest
+
 
 WORKDIR /usr/src/app
 
 COPY package*.json .
 
-RUN npm install
+RUN npm install --verbose
 
 COPY . .
 

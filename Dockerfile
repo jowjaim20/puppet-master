@@ -1,4 +1,4 @@
-FROM node:22-alpine as development
+FROM node:18-alpine as development
 
 RUN npm install -g npm@latest
 
@@ -7,13 +7,13 @@ WORKDIR /usr/src/app
 
 COPY package*.json .
 
-RUN npm install --verbose 
+RUN npm install --no-audit
 
 COPY . .
 
 RUN npm run build
 
-FROM node:22-alpine AS production
+FROM node:18-alpine AS production
 
 FROM ghcr.io/puppeteer/puppeteer:21.0.2
 

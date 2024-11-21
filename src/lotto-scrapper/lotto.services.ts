@@ -87,7 +87,7 @@ const addResult = async (resultPayload: AddResult) => {
   ) {
     console.log("payloaderror");
   } else {
-    await getSession();
+    // await getSession();
     const { data: result, error: resultError } = await supabase
       .from("result")
       .select("*")

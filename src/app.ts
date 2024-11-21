@@ -2,6 +2,8 @@ import dotenv from "dotenv";
 dotenv.config();
 import express from "express";
 import taskRouter from "./cheerio/cheerio.route";
+import lottoRouter from "./lotto-scrapper/lotto.route";
+
 import cors from "cors";
 
 import bodyParser from "body-parser";
@@ -39,6 +41,7 @@ app.get("/", (req, res) => {
 
 app.use("/task", taskRouter);
 app.use("/scrape", taskRouter);
+app.use("/lotto", lottoRouter);
 
 app.listen(PORT, () => {
   console.log(`[server]: Server is running at http://localhost:${PORT}`);

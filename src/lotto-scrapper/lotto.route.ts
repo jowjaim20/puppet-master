@@ -10,7 +10,6 @@ router
     check("index", "index is required").notEmpty(),
     (req: Request, res: Response, next: NextFunction) => {
       const error = validationResult(req);
-      console.log("error", error);
       if (error.isEmpty()) {
         next();
       } else {

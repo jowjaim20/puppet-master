@@ -29,12 +29,12 @@ const links = [
   {
     id: 8,
     link: "https://www.national-lottery.com/megamillions/results/history",
-    name: "MEGA"
+    name: "Mega Millions"
   },
   {
     id: 9,
     link: "https://www.lottery.co.uk/euromillions/results/past",
-    name: "Euro"
+    name: "Euro Millions"
   },
   {
     id: 1,

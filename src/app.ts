@@ -8,6 +8,7 @@ import lottoRouter4 from "./lotto-scrapper4/lotto.route";
 import lottoRouter5 from "./lotto-scrapper5/lotto.route";
 import lottoRouter6 from "./lotto-scrapper6/lotto.route";
 import lottoRouter7 from "./lotto-scrapper-mega-mil/lotto.route";
+import lottoRouter8 from "./lotto-scrapper-euro/lotto.route";
 
 import pingRouter from "./ping/ping.route";
 
@@ -56,6 +57,7 @@ app.use("/lotto4", lottoRouter4);
 app.use("/lotto5", lottoRouter5);
 app.use("/lotto6", lottoRouter6);
 app.use("/lottomegamil", lottoRouter7);
+app.use("/lottoeuro", lottoRouter8);
 
 app.listen(PORT, () => {
   console.log(`[server]: Server is running at http://localhost:${PORT}`);

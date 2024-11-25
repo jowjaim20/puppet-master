@@ -140,6 +140,63 @@ const addResult = async (
   }
 };
 
+const fetchEuro = async () => {
+  const index = 1;
+  const arrEmpty: string[] = [];
+  let date: string = "";
+
+  try {
+    let data = await axios.get(links[index].link);
+
+    let $ = await load(data.data);
+
+    $(" div.main > table > tbody>tr").each((i, el) => {
+      const arrText: string[] = [];
+      const text = $(el)
+        .find("td:nth-child(2)")
+        //@ts-ignore
+        .children((ii, eell) => {
+          //@ts-ignore
+          arrText.push(+$(eell).text());
+        });
+
+      if (i === 0) {
+        const date1 = $(el).find("td:nth-child(1) > a").text();
+        date = date1;
+      }
+
+      const newArr = arrText.filter((num, i) => i < 7);
+
+      arrEmpty.push(newArr.join("-"));
+    });
+
+    const split = date.split(" ");
+    const removedth = split[1].substring(0, 2);
+    split.splice(1, 1, removedth);
+    split.join(" ");
+
+    addResult(
+      {
+        //@ts-ignore
+        date: new Date(split).toDateString(),
+        game_id: links[index].id,
+        numbers: arrEmpty[0]
+          .split("-")
+          .map((num: any) => +num)
+          .filter((_, index) => index <= 4),
+        numbers_set2: arrEmpty[0]
+          .split("-")
+          .map((num: any) => +num)
+          .filter((_, index) => index >= 5)
+      },
+      index,
+      5
+    );
+  } catch (error) {
+    console.log("error", error);
+  }
+};
+
 const fetchMegaMillions = async () => {
   const arrEmpty: string[] = [];
   let date: string = "";
@@ -182,7 +239,7 @@ const fetchMegaMillions = async () => {
         numbers_set2: arrEmpty[0]
           .split("-")
           .map((num: any) => +num)
-          .filter((_, index) => index === 5)
+          .filter((_, index) => index >= 5)
       },
       0,
       5
@@ -229,4 +286,4 @@ const fetchPCSO = async (index: number) => {
   }
 };
 
-export { fetchPCSO, fetchMegaMillions };
+export { fetchPCSO, fetchMegaMillions, fetchEuro };

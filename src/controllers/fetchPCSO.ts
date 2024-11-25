@@ -78,13 +78,17 @@ type defaultKeys = "id" | "created_at";
 
 export type AddResult = Omit<Result, defaultKeys>;
 
-const addResult = async (resultPayload: AddResult, index: number) => {
+const addResult = async (
+  resultPayload: AddResult,
+  index: number,
+  length: number
+) => {
   console.log("resultPayload", resultPayload);
   const today = new Date();
 
   if (
     new Date(resultPayload.date).getTime() > today.getTime() ||
-    resultPayload.numbers.length !== 6
+    resultPayload.numbers.length !== length
   ) {
     console.log("payloaderror");
   } else {
@@ -136,6 +140,58 @@ const addResult = async (resultPayload: AddResult, index: number) => {
   }
 };
 
+const fetchMegaMillions = async () => {
+  const arrEmpty: string[] = [];
+  let date: string = "";
+  let price = null;
+
+  try {
+    let data = await axios.get(links[0].link);
+
+    let $ = await load(data.data);
+    $(" table > tbody > tr").each((i, el) => {
+      const arrText: any[] = [];
+
+      const text = $(el)
+        .find("td.noBefore.nowrap > ul")
+        //@ts-ignore
+        .children((_, eell) => {
+          arrText.push($(eell).text());
+        });
+
+      if (i === 0) {
+        const date1 = $(el).find(" td.noBefore.colour > a").text();
+        const price1 = $(el).find("tr:nth-child(1) > td:nth-child(3)").text();
+        price = price1.trim();
+        date = date1;
+      }
+
+      const test = arrText.filter((e, i) => i !== arrText.length - 1);
+
+      arrEmpty.push(test.join("-"));
+    });
+
+    addResult(
+      {
+        date,
+        game_id: links[0].id,
+        numbers: arrEmpty[0]
+          .split("-")
+          .map((num: any) => +num)
+          .filter((_, index) => index <= 4),
+        numbers_set2: arrEmpty[0]
+          .split("-")
+          .map((num: any) => +num)
+          .filter((_, index) => index === 5)
+      },
+      0,
+      5
+    );
+  } catch (error) {
+    console.log("error", error);
+  }
+};
+
 const fetchPCSO = async (index: number) => {
   console.log("index", index);
   const arrEmpty: any = [];
@@ -165,11 +221,12 @@ const fetchPCSO = async (index: number) => {
         game_id: links[index].id,
         numbers: arrEmpty[0].split("-").map((num: any) => +num)
       },
-      index
+      index,
+      6
     );
   } catch (error) {
     console.log("error", error);
   }
 };
 
-export { fetchPCSO };
+export { fetchPCSO, fetchMegaMillions };

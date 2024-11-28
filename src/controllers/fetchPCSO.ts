@@ -65,6 +65,11 @@ const links = [
     id: 11,
     link: "https://www.national-lottery.com/powerball/results/history",
     name: "Powerball"
+  },
+  {
+    id: 20,
+    link: "https://www.megasena.com/resultados",
+    name: "Mega Sena"
   }
 ];
 
@@ -258,6 +263,54 @@ const fetchPowerBall = async () => {
   }
 };
 
+const fetchMegaSena = async () => {
+  const index = 8;
+  const arrEmpty: string[] = [];
+  let date: string = "";
+  let price = null;
+
+  try {
+    let data = await axios.get(links[index].link);
+
+    let $ = await load(data.data);
+    $("tbody ").each((i, el) => {
+      const arrText: string[] = [];
+      $(el)
+        .find("ul")
+        //@ts-ignore
+        .children((e, eell) => {
+          arrText.push($(eell).text());
+        });
+
+      if (i === 0) {
+        const date1 = $(el).find("div.date").text();
+        date = date1;
+      }
+
+      const test = arrText.filter((e, i) => i <= 5);
+
+      arrEmpty.push(test.join("-"));
+    });
+
+    const newDate = date.split("/").reverse().join("-");
+    addResult(
+      {
+        date: newDate,
+        game_id: links[index].id,
+        numbers: arrEmpty[0]
+          .split("-")
+          .map((num: any) => +num)
+          .filter((_, index) => index <= 5),
+        numbers_set2: []
+      },
+      index,
+      6
+    );
+  } catch (error) {
+    console.log("error", error);
+  }
+};
+
 const fetchMegaMillions = async () => {
   const arrEmpty: string[] = [];
   let date: string = "";
@@ -347,4 +400,10 @@ const fetchPCSO = async (index: number) => {
   }
 };
 
-export { fetchPCSO, fetchMegaMillions, fetchEuro, fetchPowerBall };
+export {
+  fetchPCSO,
+  fetchMegaMillions,
+  fetchEuro,
+  fetchPowerBall,
+  fetchMegaSena
+};

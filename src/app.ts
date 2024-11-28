@@ -10,6 +10,7 @@ import lottoRouter6 from "./lotto-scrapper6/lotto.route";
 import lottoRouter7 from "./lotto-scrapper-mega-mil/lotto.route";
 import lottoRouter8 from "./lotto-scrapper-euro/lotto.route";
 import lottoRouter9 from "./lotto-scrapper-powerball/lotto.route";
+import lottoRouter10 from "./lotto-scrapper-mega-sena/lotto.route";
 
 import pingRouter from "./ping/ping.route";
 
@@ -32,9 +33,9 @@ const whitelist = [
 app.use(
   cors({
     origin: (origin, callback) => {
-      console.log("origin", origin);
+      // console.log("origin", origin);
       if (whitelist.indexOf(origin || "") !== -1 || !origin) {
-        console.log("origin", origin);
+        // console.log("origin", origin);
         callback(null, true);
       } else {
         callback(new Error("Not Allowed by Cors"));
@@ -60,6 +61,7 @@ app.use("/lotto6", lottoRouter6);
 app.use("/lottomegamil", lottoRouter7);
 app.use("/lottoeuro", lottoRouter8);
 app.use("/powerball", lottoRouter9);
+app.use("/megasena", lottoRouter10);
 
 app.listen(PORT, () => {
   console.log(`[server]: Server is running at http://localhost:${PORT}`);

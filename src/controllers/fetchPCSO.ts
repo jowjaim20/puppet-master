@@ -60,6 +60,11 @@ const links = [
     id: 3,
     link: "https://www.lottopcso.com/6-58-lotto-result-history-and-summary/",
     name: "PCSO ULTRA Lotto 6/58"
+  },
+  {
+    id: 11,
+    link: "https://www.national-lottery.com/powerball/results/history",
+    name: "Powerball"
   }
 ];
 
@@ -122,12 +127,16 @@ const addResult = async (
           .select("*")
           .eq("game_id", resultPayload.game_id);
 
-        result?.forEach((item) =>
-          sendPushNotification(item.token, {
-            result: data,
-            name: links[index].name
-          })
-        );
+        if (result) {
+          result.forEach((item) =>
+            sendPushNotification(item.token, {
+              result: data,
+              name: links[index].name
+            })
+          );
+
+          console.log(`${resultPayload.date} added`);
+        }
       }
     } else {
       //   notification.openNotification({
@@ -179,6 +188,58 @@ const fetchEuro = async () => {
       {
         //@ts-ignore
         date: new Date(split).toDateString(),
+        game_id: links[index].id,
+        numbers: arrEmpty[0]
+          .split("-")
+          .map((num: any) => +num)
+          .filter((_, index) => index <= 4),
+        numbers_set2: arrEmpty[0]
+          .split("-")
+          .map((num: any) => +num)
+          .filter((_, index) => index >= 5)
+      },
+      index,
+      5
+    );
+  } catch (error) {
+    console.log("error", error);
+  }
+};
+
+const fetchPowerBall = async () => {
+  const index = 7;
+  const arrEmpty: string[] = [];
+  let date: string = "";
+  let price = null;
+
+  try {
+    let data = await axios.get(links[index].link);
+
+    let $ = await load(data.data);
+    $(" table > tbody > tr").each((i, el) => {
+      const arrText: string[] = [];
+      const text = $(el)
+        .find("td.noBefore.nowrap > ul")
+        //@ts-ignore
+        .children((e, eell) => {
+          arrText.push($(eell).text());
+        });
+
+      if (i === 0) {
+        const date1 = $(el).find(" td.noBefore.colour > a").text();
+        const price1 = $(el).find("tr:nth-child(1) > td:nth-child(3)").text();
+        price = price1.trim();
+        date = date1;
+      }
+
+      const test = arrText.filter((e, i) => i !== arrText.length - 1);
+
+      arrEmpty.push(test.join("-"));
+    });
+
+    addResult(
+      {
+        date,
         game_id: links[index].id,
         numbers: arrEmpty[0]
           .split("-")
@@ -286,4 +347,4 @@ const fetchPCSO = async (index: number) => {
   }
 };
 
-export { fetchPCSO, fetchMegaMillions, fetchEuro };
+export { fetchPCSO, fetchMegaMillions, fetchEuro, fetchPowerBall };
